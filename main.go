@@ -9,7 +9,9 @@ import (
 	"strings"
 	"time"
 
+	// 键盘监听
 	"github.com/eiannone/keyboard"
+	// 终端动态显示
 	"github.com/gosuri/uilive"
 )
 
@@ -26,12 +28,13 @@ func main() {
 
 	// 初始化
 	bihua.input()
+	next := 0
 	input := ""
 	p := []int{}
 	writer := uilive.New()
 	writer.Start()
 
-	// 不知道这个10有啥用，好像是协程
+	// 不知道这个10有啥用，好像是协程 //
 	keysEvents, err := keyboard.GetKeys(10)
 	if err != nil {
 		panic(err)
@@ -40,7 +43,7 @@ func main() {
 		_ = keyboard.Close()
 	}()
 
-	fmt.Println("Press ESC to quit")
+	fmt.Fprintf(writer, "Press ESC to quit\n")
 
 	for {
 		event := <-keysEvents
@@ -49,6 +52,26 @@ func main() {
 		}
 		// fmt.Printf("You pressed: rune %q, key %X\r\n", event.Rune, event.Key)
 		if event.Key == keyboard.KeyEsc {
+			break
+		}
+		if event.Rune == '7' {
+			fmt.Fprintf(writer, bihua[4*next+0].character+"\n")
+			writer.Stop()
+			break
+		}
+		if event.Rune == '8' {
+			fmt.Fprintf(writer, bihua[4*next+1].character+"\n")
+			writer.Stop()
+			break
+		}
+		if event.Rune == '9' {
+			fmt.Fprintf(writer, bihua[4*next+2].character+"\n")
+			writer.Stop()
+			break
+		}
+		if event.Rune == '0' {
+			fmt.Fprintf(writer, bihua[4*next+3].character+"\n")
+			writer.Stop()
 			break
 		}
 		switch event.Rune {
@@ -63,28 +86,41 @@ func main() {
 		case '5':
 			input += "5"
 		case '6':
-		case '7':
-		case '8':
-		case '9':
-		case '0':
 		case '-':
+			if next != 0 {
+				next--
+			}
 		case '=':
-		case '\x00':
+			next++
+		case '\x00': // Backspace
 			if len(input) == 0 {
 				continue
 			}
 			input = input[:len(input)-1]
 		}
+
 		p = bihua.match(input)
 		fmt.Fprintf(writer, "%s\n", 笔画(input))
-		for _, i := range p {
-			fmt.Fprintf(writer.Newline(), "%s\n", bihua[i-1].character)
+		if p == nil {
+			fmt.Fprintf(writer.Newline(), "===\n")
+			continue
+		}
+		for j, i := range p {
+			k := j + 7
+			if k == 10 {
+				k = 0
+			}
+			fmt.Fprintf(writer.Newline(), "%d %s\n", k, bihua[i-1].character)
+			if k == 0 {
+				break
+			}
+
 		}
 		time.Sleep(time.Millisecond * 100)
 	}
 }
 
-// 首先要读取数据
+// 首先要读取字的数据，给结构体
 func (bihua *bh) input() {
 	file, err := ioutil.ReadFile(`./bihua.dat`)
 	if err != nil {
@@ -103,8 +139,9 @@ func (bihua *bh) input() {
 		}
 	}
 }
+
+// 匹配有两种，一种是完全输入，一种是不完全输入只匹配前几位
 func (bihua *bh) match(input string) []int {
-	n := 0
 	m := []int{}
 	if input == "" {
 		return nil
@@ -116,10 +153,6 @@ func (bihua *bh) match(input string) []int {
 		}
 		if len(input) < len(j.strokes) && input == j.strokes[:len(input)] {
 			m = append(m, j.rank)
-			n++
-		}
-		if n == 6 {
-			break
 		}
 	}
 	if len(m) == 0 {
@@ -133,12 +166,15 @@ func (bihua *bh) best(rank int) {
 	bihua[rank].strokes, bihua[rank-1].strokes = bihua[rank-1].strokes, bihua[rank].strokes
 	bihua[rank].character, bihua[rank-1].character = bihua[rank-1].character, bihua[rank].character
 }
+
 // 没写完
 func (bihua *bh) output() {
 	for n := range bihua {
 		fmt.Println(bihua[n])
 	}
 }
+
+// 12345转化为横竖撇点折
 func 笔画(str string) string {
 	m := ""
 	for _, n := range str {
