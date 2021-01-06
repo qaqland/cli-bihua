@@ -43,7 +43,7 @@ func main() {
 		_ = keyboard.Close()
 	}()
 
-	fmt.Fprintf(writer, "Press ESC to quit\n")
+	fmt.Fprintf(writer, "ESC退出\n")
 
 	for {
 		event := <-keysEvents
@@ -56,22 +56,18 @@ func main() {
 		}
 		if event.Rune == '7' {
 			fmt.Fprintf(writer, bihua[4*next+0].character+"\n")
-			writer.Stop()
 			break
 		}
 		if event.Rune == '8' {
 			fmt.Fprintf(writer, bihua[4*next+1].character+"\n")
-			writer.Stop()
 			break
 		}
 		if event.Rune == '9' {
 			fmt.Fprintf(writer, bihua[4*next+2].character+"\n")
-			writer.Stop()
 			break
 		}
 		if event.Rune == '0' {
 			fmt.Fprintf(writer, bihua[4*next+3].character+"\n")
-			writer.Stop()
 			break
 		}
 		switch event.Rune {
@@ -91,6 +87,10 @@ func main() {
 				next--
 			}
 		case '=':
+			// p = 0 1 3 4 5
+			if len(p) > next*4-1 && len(p) < (next+1)*4+1 {
+				continue
+			}
 			next++
 		case '\x00': // Backspace
 			if len(input) == 0 {
@@ -101,23 +101,24 @@ func main() {
 
 		p = bihua.match(input)
 		fmt.Fprintf(writer, "%s\n", 笔画(input))
+		fmt.Fprintf(writer.Newline(), "next:%d\n", next)
 		if p == nil {
 			fmt.Fprintf(writer.Newline(), "===\n")
 			continue
 		}
 		for j, i := range p {
-			k := j + 7
+			k := j + 7 - next*4
 			if k == 10 {
 				k = 0
 			}
-			fmt.Fprintf(writer.Newline(), "%d %s\n", k, bihua[i-1].character)
-			if k == 0 {
-				break
+			if j > next*4-1 && j < (next+1)*4 {
+				fmt.Fprintf(writer.Newline(), "%d %s\n", k, bihua[i-1].character)
 			}
-
 		}
 		time.Sleep(time.Millisecond * 100)
 	}
+	fmt.Fprintf(writer, "github.com/ccccpress")
+	writer.Stop()
 }
 
 // 首先要读取字的数据，给结构体
