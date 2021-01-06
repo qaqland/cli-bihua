@@ -7,7 +7,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	// 键盘监听
 	"github.com/eiannone/keyboard"
@@ -16,7 +15,7 @@ import (
 )
 
 // 这个地方要设置大小
-type bh [20]struct {
+type bh [20887]struct {
 	rank      int
 	character string
 	strokes   string
@@ -55,19 +54,19 @@ func main() {
 			break
 		}
 		if event.Rune == '7' {
-			fmt.Fprintf(writer, bihua[4*next+0].character+"\n")
+			fmt.Fprintf(writer, bihua[p[4*next+0]-1].character+"\n")
 			break
 		}
 		if event.Rune == '8' {
-			fmt.Fprintf(writer, bihua[4*next+1].character+"\n")
+			fmt.Fprintf(writer, bihua[p[4*next+1]-1].character+"\n")
 			break
 		}
 		if event.Rune == '9' {
-			fmt.Fprintf(writer, bihua[4*next+2].character+"\n")
+			fmt.Fprintf(writer, bihua[p[4*next+2]-1].character+"\n")
 			break
 		}
 		if event.Rune == '0' {
-			fmt.Fprintf(writer, bihua[4*next+3].character+"\n")
+			fmt.Fprintf(writer, bihua[p[4*next+3]-1].character+"\n")
 			break
 		}
 		switch event.Rune {
@@ -115,9 +114,9 @@ func main() {
 				fmt.Fprintf(writer.Newline(), "%d %s\n", k, bihua[i-1].character)
 			}
 		}
-		time.Sleep(time.Millisecond * 100)
+		// time.Sleep(time.Millisecond * 100)
 	}
-	fmt.Fprintf(writer, "github.com/ccccpress")
+	fmt.Fprintf(writer, "ccccpress")
 	writer.Stop()
 }
 
