@@ -95,6 +95,7 @@ func main() {
 			if len(input) == 0 {
 				continue
 			}
+			next = 0
 			input = input[:len(input)-1]
 		}
 
@@ -116,7 +117,6 @@ func main() {
 		}
 		// time.Sleep(time.Millisecond * 100)
 	}
-	fmt.Fprintf(writer, "ccccpress")
 	writer.Stop()
 }
 
