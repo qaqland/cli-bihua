@@ -24,7 +24,7 @@ type bh [20887]struct {
 // 词+字
 type bihuaPlus struct {
 	bh
-	ci [3]string
+	ci [400000]string
 }
 
 var bihua bihuaPlus
