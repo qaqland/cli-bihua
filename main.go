@@ -14,14 +14,20 @@ import (
 	"github.com/gosuri/uilive"
 )
 
-// 这个地方要设置大小
+// 字，这个地方要设置大小
 type bh [20887]struct {
 	rank      int
 	character string
 	strokes   string
 }
 
-var bihua bh
+// 词+字
+type bihuaPlus struct {
+	bh
+	ci []string
+}
+
+var bihua bihuaPlus
 
 func main() {
 
@@ -54,19 +60,23 @@ func main() {
 			break
 		}
 		if event.Rune == '7' {
-			fmt.Fprintf(writer, bihua[p[4*next+0]-1].character+"\n")
+			fmt.Fprintf(writer, bihua.bh[p[4*next+0]-1].character+"\n")
+			bihua.best(p[4*next+0] - 1)
 			break
 		}
 		if event.Rune == '8' {
-			fmt.Fprintf(writer, bihua[p[4*next+1]-1].character+"\n")
+			fmt.Fprintf(writer, bihua.bh[p[4*next+1]-1].character+"\n")
+			bihua.best(p[4*next+1] - 1)
 			break
 		}
 		if event.Rune == '9' {
-			fmt.Fprintf(writer, bihua[p[4*next+2]-1].character+"\n")
+			fmt.Fprintf(writer, bihua.bh[p[4*next+2]-1].character+"\n")
+			bihua.best(p[4*next+2] - 1)
 			break
 		}
 		if event.Rune == '0' {
-			fmt.Fprintf(writer, bihua[p[4*next+3]-1].character+"\n")
+			fmt.Fprintf(writer, bihua.bh[p[4*next+3]-1].character+"\n")
+			bihua.best(p[4*next+3] - 1)
 			break
 		}
 		switch event.Rune {
@@ -112,41 +122,51 @@ func main() {
 				k = 0
 			}
 			if j > next*4-1 && j < (next+1)*4 {
-				fmt.Fprintf(writer.Newline(), "%d %s\n", k, bihua[i-1].character)
+				fmt.Fprintf(writer.Newline(), "%d %s\n", k, bihua.bh[i-1].character)
 			}
 		}
 		// time.Sleep(time.Millisecond * 100)
 	}
 	writer.Stop()
+	bihua.output()
 }
 
-// 首先要读取字的数据，给结构体
-func (bihua *bh) input() {
-	file, err := ioutil.ReadFile(`./bihua.dat`)
+// 首先要读取字+词的数据，给结构体
+func (bihua *bihuaPlus) input() {
+	file1, err := ioutil.ReadFile(`./bihua.dat`)
 	if err != nil {
-		log.Println(err)
+		log.Println(err, "字库文件有误")
 		os.Exit(2)
 	}
-	arr := strings.Fields(string(file))
+	arr := strings.Fields(string(file1))
 	for n, m := range arr {
 		switch n % 3 {
 		case 0:
-			bihua[n/3].rank, _ = strconv.Atoi(m)
+			bihua.bh[n/3].rank, _ = strconv.Atoi(m)
 		case 1:
-			bihua[n/3].character = m
+			bihua.bh[n/3].character = m
 		case 2:
-			bihua[n/3].strokes = m
+			bihua.bh[n/3].strokes = m
 		}
+	}
+	file2, err := ioutil.ReadFile(`./bihuaPlus.dat`)
+	if err != nil {
+		log.Println(err, "词库文件有误")
+		os.Exit(2)
+	}
+	brr := strings.Fields(string(file2))
+	for n, m := range brr {
+		bihua.ci[n] = m
 	}
 }
 
 // 匹配有两种，一种是完全输入，一种是不完全输入只匹配前几位
-func (bihua *bh) match(input string) []int {
+func (bihua *bihuaPlus) match(input string) []int {
 	m := []int{}
 	if input == "" {
 		return nil
 	}
-	for _, j := range bihua {
+	for _, j := range bihua.bh {
 		if input == j.strokes {
 			m = append(m, j.rank)
 			continue
@@ -162,15 +182,31 @@ func (bihua *bh) match(input string) []int {
 }
 
 // 匹配成功的数和前面那一个交换顺序
-func (bihua *bh) best(rank int) {
-	bihua[rank].strokes, bihua[rank-1].strokes = bihua[rank-1].strokes, bihua[rank].strokes
-	bihua[rank].character, bihua[rank-1].character = bihua[rank-1].character, bihua[rank].character
+// 词的还没做
+func (bihua *bihuaPlus) best(rank int) {
+	bihua.bh[rank].strokes, bihua.bh[rank-1].strokes = bihua.bh[rank-1].strokes, bihua.bh[rank].strokes
+	bihua.bh[rank].character, bihua.bh[rank-1].character = bihua.bh[rank-1].character, bihua.bh[rank].character
 }
 
-// 没写完
-func (bihua *bh) output() {
-	for n := range bihua {
-		fmt.Println(bihua[n])
+// 保存
+func (bihua *bihuaPlus) output() {
+	file1 := ""
+	for n := range bihua.bh {
+		file1 += strconv.Itoa(bihua.bh[n].rank) + " " + bihua.bh[n].character + " " + bihua.bh[n].strokes + "\n"
+	}
+	err := ioutil.WriteFile(`./bihua.dat`, []byte(file1), 0666)
+	if err != nil {
+		log.Println(err, "保存字库有误")
+		os.Exit(2)
+	}
+	file2 := ""
+	for _, m := range bihua.ci {
+		file2 += m + "\n"
+	}
+	err = ioutil.WriteFile(`./bihuaPlus.dat`, []byte(file2), 0666)
+	if err != nil {
+		log.Println(err, "保存词库有误")
+		os.Exit(2)
 	}
 }
 
