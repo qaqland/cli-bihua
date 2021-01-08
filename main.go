@@ -11,6 +11,8 @@ import (
 	"github.com/eiannone/keyboard"
 	// 终端动态显示
 	"github.com/gosuri/uilive"
+	// 显示在下一行
+	// "github.com/go-vgo/robotgo"
 )
 
 // 词+字
@@ -32,7 +34,7 @@ func main() {
 	next := 0
 	input := ""
 	p := []int{}
-	q := 0
+	q := -1
 	writer := uilive.New()
 	writer.Start()
 
@@ -60,10 +62,13 @@ func main() {
 		if event.Rune == '7' {
 			if q == 0 {
 				fmt.Fprintf(writer, bihua.zi[p[4*next+0]]+"\n")
+				// robotgo.TypeStr(bihua.zi[p[4*next+0]])
 				bihua.best(p[4*next+0], q)
-			} else {
+			} else if q == 1 {
 				fmt.Fprintf(writer, bihua.ci[p[4*next+0]]+"\n")
 				bihua.best(p[4*next+0], q)
+			} else {
+				continue
 			}
 			break
 		}
@@ -71,9 +76,11 @@ func main() {
 			if q == 0 {
 				fmt.Fprintf(writer, bihua.zi[p[4*next+1]]+"\n")
 				bihua.best(p[4*next+1], q)
-			} else {
+			} else if q == 1 {
 				fmt.Fprintf(writer, bihua.ci[p[4*next+1]]+"\n")
 				bihua.best(p[4*next+1], q)
+			} else {
+				continue
 			}
 			break
 		}
@@ -81,9 +88,11 @@ func main() {
 			if q == 0 {
 				fmt.Fprintf(writer, bihua.zi[p[4*next+2]]+"\n")
 				bihua.best(p[4*next+2], q)
-			} else {
+			} else if q == 1 {
 				fmt.Fprintf(writer, bihua.ci[p[4*next+2]]+"\n")
 				bihua.best(p[4*next+2], q)
+			} else {
+				continue
 			}
 			break
 		}
@@ -91,9 +100,11 @@ func main() {
 			if q == 0 {
 				fmt.Fprintf(writer, bihua.zi[p[4*next+3]]+"\n")
 				bihua.best(p[4*next+3], q)
-			} else {
+			} else if q == 1 {
 				fmt.Fprintf(writer, bihua.ci[p[4*next+3]]+"\n")
 				bihua.best(p[4*next+3], q)
+			} else {
+				continue
 			}
 			break
 		}
@@ -183,7 +194,7 @@ func (bihua *bihuaPlus) input() {
 func (bihua *bihuaPlus) match(input string) ([]int, int) {
 	m := []int{}
 	if input == "" {
-		return nil, 0
+		return nil, -1
 	}
 
 	part := strings.Split(input, "6")
@@ -210,7 +221,7 @@ func (bihua *bihuaPlus) match(input string) ([]int, int) {
 			}
 		}
 		if len(m) == 0 {
-			return nil, 1
+			return nil, -1
 		}
 		return m, 1
 	}
@@ -224,7 +235,7 @@ func (bihua *bihuaPlus) match(input string) ([]int, int) {
 		}
 	}
 	if len(m) == 0 {
-		return nil, 0
+		return nil, -1
 	}
 	return m, 0
 }
